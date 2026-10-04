@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>贪吃蛇 · Snake Club</title>
+  <style>
+    :root{color-scheme:dark;--bg:#101913;--panel:#19241c;--ink:#edf5df;--muted:#a0af99;--lime:#c3ed79;--line:#334332}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#283c25 0%,transparent 55%),var(--bg);color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",sans-serif;min-height:100vh}
+    button{font:inherit;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #edf5df;outline-offset:4px}
+    .shell{max-width:1050px;margin:auto;padding:38px 28px 26px}.topbar{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:22px}.brand{font-weight:800;letter-spacing:3px;font-size:14px}.brand span{color:var(--lime)}.tag{font-size:12px;color:var(--muted);letter-spacing:2px}
+    main{display:grid;grid-template-columns:1fr 310px;gap:38px;margin-top:35px;align-items:start}h1{font-size:48px;line-height:1.15;margin:8px 0 12px;letter-spacing:-2px}.eyebrow{font-size:11px;letter-spacing:3px;color:var(--lime);font-weight:700}.intro{color:var(--muted);font-size:14px;margin:0 0 25px;line-height:1.8}
+    .board-wrap{position:relative;border:1px solid #43573c;border-radius:18px;padding:12px;background:#19271c;box-shadow:0 22px 70px #0004;overflow:hidden}canvas{display:block;width:100%;aspect-ratio:1;background:#111d15;border-radius:9px}.overlay{position:absolute;inset:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#101b14dc;border-radius:9px;backdrop-filter:blur(4px);padding:20px}.overlay.hidden{display:none}.symbol{font-size:42px;color:var(--lime);margin-bottom:12px}.overlay h2{font-size:28px;margin:0 0 10px}.overlay p{font-size:13px;color:var(--muted);line-height:1.8;margin:0 0 22px}.primary{border:0;border-radius:9px;background:var(--lime);color:#1c2b15;font-weight:700;padding:13px 27px;transition:transform .15s,background .15s}.primary:hover{background:#d5ffa0;transform:translateY(-2px)}
+    aside{padding-top:12px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:20px 17px}.stat span{color:var(--muted);font-size:12px}.stat strong{display:block;font-size:36px;line-height:1.2;margin-top:10px;font-variant-numeric:tabular-nums}.stat:first-child strong{color:var(--lime)}.card{border:1px solid var(--line);border-radius:13px;padding:22px;margin:16px 0;background:#18231baa}.card h3{font-size:14px;margin:0 0 17px}.setting{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}select{background:#263523;border:1px solid #4a5c41;color:var(--ink);border-radius:7px;padding:9px}.hint{font-size:12px;line-height:1.8;color:var(--muted);margin:12px 0 0}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}.secondary{background:transparent;color:var(--ink);border:1px solid #46583e;padding:12px 8px;border-radius:9px}.secondary:hover{background:#2a3b25}.secondary:disabled{opacity:.4;cursor:default}.help-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:13px}kbd{border:1px solid #4b5d43;background:#273524;border-radius:5px;padding:4px 7px;color:var(--ink);font-family:inherit;font-size:11px}.status{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);margin-top:15px}.dot{height:7px;width:7px;border-radius:50%;background:var(--lime)}footer{display:flex;justify-content:space-between;color:#7e9277;font-size:11px;margin-top:26px;letter-spacing:1px}.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,42px);gap:6px;justify-content:center;margin-top:18px}.dpad button{border:1px solid #46583e;background:#22311f;color:var(--lime);border-radius:8px;touch-action:manipulation}.dpad button:first-child{grid-column:2}.dpad button:nth-child(2){grid-column:1;grid-row:2}.dpad button:nth-child(3){grid-column:2;grid-row:2}.dpad button:nth-child(4){grid-column:3;grid-row:2}
+    @media(min-width:761px){.dpad{display:none}}@media(max-width:760px){.shell{padding:22px 18px}.tag{letter-spacing:0;font-size:10px}main{grid-template-columns:1fr;gap:18px;margin-top:25px}h1{font-size:38px}aside{padding-top:0}.stats{margin-top:0}.stat{padding:14px 18px}.stat strong{font-size:28px}.card{padding:18px}.intro{margin-bottom:18px}footer{letter-spacing:0}.help-card{display:none}}
+    @media(prefers-reduced-motion:reduce){button{transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar"><div class="brand"><span>●</span> SNAKE CLUB</div><div class="tag">经典小游戏 / 一口一口，刷新纪录</div></header>
+    <main>
+      <section>
+        <div class="eyebrow">SMALL GAME, BIG APPETITE</div><h1>再吃一口。</h1><p class="intro">转个弯，吃颗果子。让小蛇长大，也让纪录更进一步。</p>
+        <div class="board-wrap">
+          <canvas id="board" width="600" height="600" aria-label="贪吃蛇游戏棋盘"></canvas>
+          <div class="overlay" id="overlay"><div class="symbol">〰</div><h2 id="overlayTitle">准备好开吃了吗？</h2><p id="overlayText">用方向键或 WASD 移动<br>避开墙壁和自己的身体</p><button class="primary" id="start">开始游戏 →</button></div>
+        </div>
+        <div class="status" aria-live="polite"><span class="dot"></span><span id="status">等待开始 · 每颗果子 +10 分</span></div>
+        <div class="dpad" aria-label="方向控制"><button data-dir="up" aria-label="向上">↑</button><button data-dir="left" aria-label="向左">←</button><button data-dir="down" aria-label="向下">↓</button><button data-dir="right" aria-label="向右">→</button></div>
+      </section>
+      <aside>
+        <div class="eyebrow">YOUR NEXT PERSONAL BEST</div>
+        <div class="stats"><div class="stat"><span>本局得分</span><strong id="score">0</strong></div><div class="stat"><span>最高纪录</span><strong id="best">0</strong></div></div>
+        <div class="card"><h3>找到你的节奏</h3><label class="setting" for="difficulty">游戏速度<select id="difficulty"><option value="180">悠闲</option><option value="125" selected>标准</option><option value="80">挑战</option></select></label><p class="hint">速度在下一局生效。吃得越多，速度会稍微加快。</p></div>
+        <div class="controls"><button class="secondary" id="pause" disabled>Ⅱ 暂停</button><button class="secondary" id="restart">↻ 重新开始</button></div>
+        <div class="card help-card"><h3>操作指南</h3><div class="help-row"><span>移动方向</span><span><kbd>↑ ↓ ← →</kbd></span></div><div class="help-row"><span>也可以使用</span><kbd>W A S D</kbd></div><div class="help-row"><span>暂停 / 继续</span><kbd>空格</kbd></div><div class="help-row"><span>重新开始</span><kbd>R</kbd></div><p class="hint">小诀窍：给自己留一点转弯的空间。</p></div>
+      </aside>
+    </main>
+    <footer><span>BUILT FOR A LITTLE BREAK.</span><span>最高纪录保存在此浏览器</span></footer>
+  </div>
+  <script>
+    'use strict';
+    const canvas=document.getElementById('board'),ctx=canvas.getContext('2d');
+    const ui={score:document.getElementById('score'),best:document.getElementById('best'),overlay:document.getElementById('overlay'),title:document.getElementById('overlayTitle'),text:document.getElementById('overlayText'),start:document.getElementById('start'),pause:document.getElementById('pause'),status:document.getElementById('status'),difficulty:document.getElementById('difficulty')};
+    const size=20,cell=canvas.width/size,vectors={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
+    let snake,food,direction,queue=[],score=0,best=0,state='ready',timer=null,baseSpeed=125;
+    try{best=Math.max(0,Number(localStorage.getItem('snake-club-best'))||0)}catch{}ui.best.textContent=best;
+    function resetBoard(){snake=[{x:9,y:10},{x:8,y:10},{x:7,y:10}];direction=vectors.right;queue=[];score=0;ui.score.textContent=0;placeFood();draw()}
+    function placeFood(){const free=[];for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!snake.some(p=>p.x===x&&p.y===y))free.push({x,y});food=free.length?free[Math.floor(Math.random()*free.length)]:null}
+    function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+    function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#243426';ctx.lineWidth=1;for(let i=1;i<size;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,600);ctx.moveTo(0,i*cell);ctx.lineTo(600,i*cell);ctx.stroke()}
+      if(food){const x=(food.x+.5)*cell,y=(food.y+.5)*cell;ctx.shadowColor='#ff9574';ctx.shadowBlur=15;ctx.fillStyle='#ff9574';ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;rounded(x+1,y-13,3,6,1,'#c3ed79')}
+      snake.forEach((p,i)=>rounded(p.x*cell+2,p.y*cell+2,cell-4,cell-4,i===0?8:6,i===0?'#d3f99b':'#91bc60'));
+      const head=snake[0],dx=direction.x,dy=direction.y;ctx.fillStyle='#203219';for(const side of [-1,1]){ctx.beginPath();ctx.arc((head.x+.5)*cell+dx*6+dy*side*5,(head.y+.5)*cell+dy*6+dx*side*5,2.3,0,Math.PI*2);ctx.fill()}
+    }
+    function schedule(){clearTimeout(timer);if(state==='running')timer=setTimeout(tick,Math.max(45,baseSpeed-Math.floor(score/50)*6))}
+    function start(){clearTimeout(timer);baseSpeed=Number(ui.difficulty.value);resetBoard();state='running';ui.overlay.classList.add('hidden');ui.pause.disabled=false;ui.pause.textContent='Ⅱ 暂停';ui.status.textContent='正在游戏 · 每颗果子 +10 分';schedule()}
+    function turn(name){if(state!=='running')return;const next=vectors[name],last=queue.length?queue[queue.length-1]:direction;if(next.x===-last.x&&next.y===-last.y)return;if(next.x===last.x&&next.y===last.y)return;if(queue.length<2)queue.push(next)}
+    function tick(){if(state!=='running')return;if(queue.length)direction=queue.shift();const head={x:snake[0].x+direction.x,y:snake[0].y+direction.y},eating=food&&head.x===food.x&&head.y===food.y;const body=eating?snake:snake.slice(0,-1);
+      if(head.x<0||head.y<0||head.x>=size||head.y>=size||body.some(p=>p.x===head.x&&p.y===head.y)){finish(false);return}
+      snake.unshift(head);if(eating){score+=10;ui.score.textContent=score;if(score>best){best=score;ui.best.textContent=best;try{localStorage.setItem('snake-club-best',String(best))}catch{}}placeFood()}else snake.pop();draw();if(!food){finish(true);return}schedule()
+    }
+    function showOverlay(title,text,button){ui.title.textContent=title;ui.text.textContent=text;ui.start.textContent=button;ui.overlay.classList.remove('hidden')}
+    function finish(won){state='over';clearTimeout(timer);ui.pause.disabled=true;showOverlay(won?'你填满了整个棋盘！':'这一口，先歇一下。','本局得分 '+score+' · 最高纪录 '+best,'再来一局 →');ui.status.textContent=won?'恭喜通关！':'游戏结束 · 按 R 再来一局'}
+    function pause(){if(state==='running'){state='paused';clearTimeout(timer);ui.pause.textContent='▶ 继续';showOverlay('休息一下。','小蛇在等你，准备好就继续。','继续游戏 →');ui.status.textContent='已暂停'}else if(state==='paused'){state='running';ui.overlay.classList.add('hidden');ui.pause.textContent='Ⅱ 暂停';ui.status.textContent='正在游戏 · 每颗果子 +10 分';schedule()}}
+    ui.start.addEventListener('click',()=>state==='paused'?pause():start());ui.pause.addEventListener('click',pause);document.getElementById('restart').addEventListener('click',start);
+    document.addEventListener('keydown',e=>{if(e.target.matches('select, input, textarea'))return;const key=e.key.toLowerCase(),map={arrowup:'up',w:'up',arrowdown:'down',s:'down',arrowleft:'left',a:'left',arrowright:'right',d:'right'};if(map[key]){e.preventDefault();turn(map[key])}else if(key===' '){if(e.target.tagName==='BUTTON')return;e.preventDefault();if(state==='ready')start();else pause()}else if(key==='r'&&!e.repeat)start()});
+    document.querySelectorAll('[data-dir]').forEach(b=>b.addEventListener('click',()=>turn(b.dataset.dir)));
+    let touchStart=null;canvas.addEventListener('touchstart',e=>{touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});canvas.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});canvas.addEventListener('touchend',e=>{if(!touchStart)return;const dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;touchStart=null;if(Math.max(Math.abs(dx),Math.abs(dy))<12)return;turn(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'))});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='running')pause()});resetBoard();
+  </script>
+</body>
+</html>
