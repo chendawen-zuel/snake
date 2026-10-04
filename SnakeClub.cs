@@ -38,9 +38,8 @@ namespace SnakeClub {
         public void Tick() {
             if (State != GameState.Running) return;
             if (Turns.Count > 0) Direction = Turns.Dequeue();
-            Point head = new Point(Snake[0].X + Direction.X, Snake[0].Y + Direction.Y);
+            Point head = new Point((Snake[0].X + Direction.X + Size) % Size, (Snake[0].Y + Direction.Y + Size) % Size);
             bool eat = head == Food;
-            if(head.X<0 || head.Y<0 || head.X>=Size || head.Y>=Size) { State=GameState.Over; return; }
             int count = Snake.Count - (eat ? 0 : 1);
             for(int i=0;i<count;i++) if(Snake[i]==head) { State=GameState.Over; return; }
             Snake.Insert(0,head);
@@ -53,7 +52,18 @@ namespace SnakeClub {
             g.Turn(new Point(0,-1)); g.Turn(new Point(-1,0)); g.Tick(); g.Tick();
             Check(g.Snake[0]==new Point(9,9),"queued turns");
             g.State=GameState.Paused; Point p=g.Snake[0]; g.Tick(); Check(g.Snake[0]==p,"pause");
-            g.Reset(); g.Snake=new List<Point>{new Point(19,10),new Point(18,10)}; g.Tick(); Check(g.State==GameState.Over,"wall");
+            Point[] edges = {new Point(19,10),new Point(0,10),new Point(10,0),new Point(10,19)};
+            Point[] directions = {new Point(1,0),new Point(-1,0),new Point(0,-1),new Point(0,1)};
+            Point[] destinations = {new Point(0,10),new Point(19,10),new Point(10,19),new Point(10,0)};
+            for(int i=0;i<edges.Length;i++) {
+                g.Reset(); g.Food=new Point(5,5); g.Direction=directions[i];
+                g.Snake=new List<Point>{edges[i],new Point(edges[i].X-directions[i].X,edges[i].Y-directions[i].Y)};
+                g.Tick(); Check(g.State==GameState.Running && g.Snake[0]==destinations[i] && g.Snake.Count==2 && g.Score==0,"wrap edge "+i);
+            }
+            g.Reset(); g.Food=new Point(0,10); g.Snake=new List<Point>{new Point(19,10),new Point(18,10)};
+            g.Tick(); Check(g.State==GameState.Running && g.Snake[0]==new Point(0,10) && g.Score==10 && g.Snake.Count==3,"wrap food");
+            g.Reset(); g.Food=new Point(5,5); g.Snake=new List<Point>{new Point(19,10),new Point(0,10),new Point(1,10)};
+            g.Tick(); Check(g.State==GameState.Over,"wrap self collision");
             g.Reset(); g.Food=new Point(0,0); g.Snake=new List<Point>{new Point(10,10),new Point(10,11),new Point(11,11),new Point(11,10)};
             g.Tick(); Check(g.State==GameState.Running,"tail");
             g.Snake=new List<Point>{new Point(10,10),new Point(11,10),new Point(11,11),new Point(10,11)};
@@ -119,7 +129,7 @@ namespace SnakeClub {
             ConfigureButton(start,"开始游戏 →",550,412,305,46,true);start.Click+=delegate {StartGame();};
             ConfigureButton(pause,"Ⅱ 暂停",550,472,145,42,false);pause.Enabled=false;pause.Click+=delegate{TogglePause();};
             Button restart=new Button();ConfigureButton(restart,"↻ 重新开始",710,472,145,42,false);restart.Click+=delegate{StartGame();};
-            LabelAt("方向键 / WASD  移动\n空格  暂停或继续    R  重新开始\n\n小诀窍：给自己留一点转弯的空间。",550,546,340,115,10,Color.FromArgb(160,175,153),false);
+            LabelAt("方向键 / WASD  移动\n空格  暂停或继续    R  重新开始\n\n穿过边界从另一端出现，别撞到自己。",550,546,340,115,10,Color.FromArgb(160,175,153),false);
             ConfigureLabel(status,"等待开始 · 每颗果子 +10 分",30,668,550,25,9,Color.FromArgb(160,175,153),false);status.Anchor=AnchorStyles.Left|AnchorStyles.Bottom;
             Resize+=delegate{LayoutBoard();};LayoutBoard();
             timer.Tick+=delegate{game.Tick();UpdateGame();};
