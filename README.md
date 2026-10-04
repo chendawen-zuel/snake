@@ -4,10 +4,10 @@
 
 ## 下载 Windows 软件
 
-**[下载 Windows 压缩包](https://github.com/chendawen-zuel/snack/raw/refs/heads/main/dist/SnakeClub-Windows.zip)**
+**[下载 Windows 压缩包](https://github.com/chendawen-zuel/snack/releases/latest/download/SnakeClub-Windows.zip)**
 
 下载后解压，双击 `SnakeClub.exe` 即可开始，无需安装。
-也可以[单独下载可执行文件](https://github.com/chendawen-zuel/snack/raw/refs/heads/main/dist/SnakeClub.exe)。
+也可以[单独下载可执行文件](https://github.com/chendawen-zuel/snack/releases/latest/download/SnakeClub.exe)，或[查看版本发布页](https://github.com/chendawen-zuel/snack/releases)。
 
 适用于启用 .NET Framework 4.x 的 Windows 10 / 11。程序为本地制作的未签名软件。
 

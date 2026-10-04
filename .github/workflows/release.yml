@@ -1,0 +1,47 @@
+name: Publish Windows Release
+
+on:
+  push:
+    tags:
+      - v1.0.0
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out version source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Build Windows package and verify game
+        shell: pwsh
+        run: |
+          ./build.ps1
+          $result = Start-Process -FilePath ./dist/SnakeClub.exe -ArgumentList '--self-test' -WindowStyle Hidden -Wait -PassThru
+          if ($result.ExitCode -ne 0) { throw 'Core game checks failed.' }
+
+      - name: Create release, upload downloads, and publish
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release view $env:RELEASE_TAG --json tagName 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $env:RELEASE_TAG --verify-tag --draft --title "贪吃蛇 Snake Club $env:RELEASE_TAG" --notes-file .github/release-notes.md
+            if ($LASTEXITCODE -ne 0) { throw 'Release creation failed.' }
+          }
+          gh release upload $env:RELEASE_TAG ./dist/SnakeClub-Windows.zip ./dist/SnakeClub.exe ./dist/README.txt --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release attachment upload failed.' }
+          gh release edit $env:RELEASE_TAG --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }
